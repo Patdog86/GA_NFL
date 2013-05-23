@@ -1,8 +1,18 @@
-import parse_gameid as pg
 import csv
-import pandas as pd
+import pdb
 import re
 import sys
+
+import pandas as pd
+<<<<<<< HEAD
+import re
+import sys
+=======
+#import play_parser
+from pandas import *    # 1 pandas is already here 2 * imports are confusing
+
+import parse_gameid as pg
+>>>>>>> e7e7159973ed741276864e8ccc4338ac0067985b
 
 data = pd.read_csv("2002_nfl_pbp_data.csv")
 

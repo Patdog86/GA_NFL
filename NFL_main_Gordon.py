@@ -1,16 +1,23 @@
 import csv
+import pdb
+import sys
+
 import pandas as pd
-import play_parser
 
-data = pd.read_csv("2002_nfl_pbp_data.csv")
+import play_record as pr
 
-x = play_parser.Play(data['description'])
+data = pd.read_csv(sys.argv[1])
 
-for row in data:
-     record = row
-     play = extract_play(record)
-     thisPlay = Play(play_text)
+data = pd.DataFrame(pd.read_csv(sys.argv[1]))
 
-     record_dct = parse_record(record)
-     description = record_dct['description']
+plays = []
+for i in data.index:
+    plays.append(pr.PlayRecord(data.ix[i]))
 
+x = plays[0]
+x.set_game()
+
+pdb.set_trace()
+
+
+    

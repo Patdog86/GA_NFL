@@ -10,17 +10,14 @@ class Play(object):
     def __str__(self):
         return "<Play %s>" % self.val
 
-    def play_type(self, data):
+    def play_type(self):
     	
-        for row in play_text:
-			if('pass' in play_text) or ('sacked' in play_text) or ('passed' in play_text):
-				self.val = 'pass'
-			elif('yards' in play_text) or ('yards.' in play_text) or ('no gain' in play_text):
-				self.val = 'run'
-       """ if re.search('kick', self.play_text):
+        if('pass' in self.play_text) or ('sacked' in self.play_text) or ('passed' in self.play_text):
+            self.val = 'pass'
+        elif('yards' in self.play_text) or ('yards.' in self.play_text) or ('no gain' in self.play_text):
+            self.val = 'run'
+        elif re.search('kick', self.play_text):
             self.val = 'kick'
-        elif re.search('pass', self.play_text):
-            self.val = 'pass'"""
         
         return self.val
         
