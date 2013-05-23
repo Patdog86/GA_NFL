@@ -1,14 +1,10 @@
 import parse_gameid as pg
 import csv
 import pandas as pd
-#import play_parser
-from pandas import *    # 1 pandas is already here 2 * imports are confusing
 import re
 import sys
 
-data = DataFrame(pd.read_csv(sys.argv[1]))
-
-#x = play_parser.Play(data['description'])
+data = pd.read_csv("2002_nfl_pbp_data.csv")
 
 #For PlayType function
 data['play_type'] = 'run'
@@ -20,14 +16,15 @@ for i in data.index:
 	if('kicks' in data['description'][i]) and (data['play_type'][i] != 'pass') and (data['play_type'][i] != 'punt'):
 		data['play_type'][i] = 'kick'
 	
-#For splitting python ID variable; haven't got it working yet
+# each entry in gamedata will be a tuple, arranged date, matchup, away, home
 gameid = list(data['gameid'])
 gamedata = [pg.parse_gameid(i) for i in gameid]
-# each entry in gamedata will be a tuple, arranged date, matchup, away, home
 
-     #play = extract_play(record)
-     #thisPlay = Play(play_text)
+#yards  WHY CAN'T I REFERENCE 'i+1' IN THE LOOP ? AND IS 'hometeam' ONLY USABLE WITHIN 'parse_gameid' ?
+yardline = data['ydline']
 
-     #record_dct = parse_record(record)
-     #description = record_dct['description']
-
+for i in hometeam:
+	if hometeam[i] == hometeam[i+1]:
+		i.yards_gained = (yardline[i+1] - yardline[i])
+	else:
+		i.yards_gained = None
