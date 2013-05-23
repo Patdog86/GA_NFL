@@ -1,10 +1,13 @@
-import parse_gameid as pg
 import csv
+import pdb
+import re
+import sys
+
 import pandas as pd
 #import play_parser
 from pandas import *    # 1 pandas is already here 2 * imports are confusing
-import re
-import sys
+
+import parse_gameid as pg
 
 data = DataFrame(pd.read_csv(sys.argv[1]))
 
