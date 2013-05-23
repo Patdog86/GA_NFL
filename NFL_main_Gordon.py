@@ -6,9 +6,7 @@ import pandas as pd
 
 import play_record as pr
 
-data = pd.read_csv(sys.argv[1])
-
-data = pd.DataFrame(pd.read_csv(sys.argv[1]))
+data = pd.DataFrame(pd.read_csv("2002_nfl_pbp_data.csv"))
 
 plays = []
 for i in data.index:
