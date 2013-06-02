@@ -17,6 +17,9 @@ import parse_gameid as pg
 
 data = pd.read_csv("2002_nfl_pbp_data.csv")
 
+for i in range(len(data)):
+	data['description'][i] = ' '.join(data['description'][i].split())
+
 #For PlayType function
 playtype = ['run']*len(data)	
 for i in data.index:	
@@ -59,8 +62,7 @@ for i in range(len(data)-1):
 		away_turnovers[i] = (away_turnovers[i-1] + 1) 
 	elif gameid[i] == gameid[i-1]:
 		away_turnovers[i] = away_turnovers[i-1]
-
-			
+		
 #Parsing gameid variable
 gameid = list(data['gameid'])	
 date = [i.split('_',1)[0] for i in gameid]
@@ -90,6 +92,28 @@ for i in range(len(data)-1):
 	elif (offense[i] == awayteam[i]) and (gameid[i] == gameid[i-1]):
 		away_yards_gained_game[i] = (away_yards_gained_game[i-1] + yards_gained_play[i])
 		home_yards_gained_game[i] = home_yards_gained_game[i-1]
+
+# PENALTIES # 
+penalty = [0]*len(data)
+penalty_enforced = [0]*len(data)
+penalty_yards = [0]*len(data)
+for i in range(len(data)-1):
+	if ('PENALTY' in data['description'][i]):
+		penalty[i] = 1
+		penalty_enforced[i] = 1
+	elif ('Penalty' in data['description'][i]):
+		penalty[i] = 1
+before_penalty = [None]*len(data)
+keyword = ['yards enforced']*len(data)
+after_penalty = [None]*len(data)
+for i in range(len(data)):
+	mystring = data['description'][i]	
+	before_penalty[i], keyword[i], after_penalty[i] = mystring.partition(keyword[i])
+	before_penalty[i] = ' '.join(before_penalty[i].split())
+
+for i in range(len(data)):
+	if keyword[i] != '':
+		penalty_yards[i] = int(before_penalty[i].split()[-1])
 
 # CREATING OFFENSE AND DEFENSE SCORE VARIABLES #
 homescore = [0]*len(data)
