@@ -9,9 +9,11 @@ import pandas as pd
 import re
 import sys
 import math
+import matplotlib
+import pylab as pl
 #=======
 #import play_parser
-from sklearn import linear_model
+from sklearn import *
 import random
 #import parse_gameid as pg
 np.random.seed(0)
@@ -337,6 +339,8 @@ nfldata_test = nfldata.drop(rows)
 nfltarget_train = nfltarget.ix[rows]
 nfltarget_test = nfltarget.drop(rows)
 
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier()
 knn.fit(nfldata_train, nfltarget_train)
 x = list(knn.predict(nfldata_test))
 y=list(nfltarget_test)
@@ -367,6 +371,8 @@ regr.score(nfldata1_test, nfltarget1_test)
 x1 = regr.predict(nfldata1_test)
 y1 = list(nfltarget1_test)
 
+# Plot predicted vs. actual values #
+
 points_accuracy = [x1[i]-y1[i] for i in range(len(nfldata1_test))]
 for i in range(len(points_accuracy)):
 	if points_accuracy[i] < 0:
@@ -382,7 +388,6 @@ percent_error = avg_pts_off / avg_pts
 #	if gameid[i] != gameid[i+1]:
 #		final_plays.append(data.ix[i])
 #final_plays.append(data.ix[len(data)-1])
-
 
 ###  grouped_data_game = data.groupby('gameid')  ###
 ###  grouped_data.tail(1)['offscore'] = offense's score at the end of each game  ###
