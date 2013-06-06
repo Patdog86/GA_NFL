@@ -324,62 +324,86 @@ for i in range(len(data)):
 		away_punt[i] = away_punt[i-1]
 
 # PREDICTING WINNER #	
-nfldata = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'homediff':homediff, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
+nfldata = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
 nfldata = nfldata[nfldata['final_play'] >0]
 nfldata = nfldata[nfldata['homewins'] != 0.5]
 nfltarget = nfldata['homewins']
 del nfldata['final_play']
 del nfldata['homewins']
 
-split = 0.7
-samplesize = len(nfldata)
-rows = random.sample(nfldata.index, int(round(split*samplesize)))
-nfldata_train = nfldata.ix[rows]
-nfldata_test = nfldata.drop(rows)
-nfltarget_train = nfltarget.ix[rows]
-nfltarget_test = nfltarget.drop(rows)
-
 from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier()
-knn.fit(nfldata_train, nfltarget_train)
-x = list(knn.predict(nfldata_test))
-y=list(nfltarget_test)
-correct = [0]*len(nfldata_test)
-for i in range(len(nfldata_test)):
-	if x[i] == y[i]:
-		correct[i] = 1
-win_accuracy = (sum(correct)/float(len(correct)))
+split = 0.7
+n = 100
+samplesize = len(nfldata)
+n_fold_accuracy = []
+for i in range(0,n):
+	rows = random.sample(nfldata.index, int(round(split*samplesize)))
+	nfldata_train = nfldata.ix[rows]
+	nfldata_test = nfldata.drop(rows)
+	nfltarget_train = nfltarget.ix[rows]
+	nfltarget_test = nfltarget.drop(rows)
+	model= knn.fit(nfldata_train, nfltarget_train)
+	x = list(knn.predict(nfldata_test))
+	y = list(nfltarget_test)
+	correct = [0]*len(nfldata_test)
+	for j in range(len(nfldata_test)):
+		if x[j] == y[j]:
+			correct[j] = 1
+	win_accuracy = (sum(correct)/float(len(correct)))
+	n_fold_accuracy.append(win_accuracy)
 
+final_accuracy = sum(n_fold_accuracy)/float(len(n_fold_accuracy))
+final_accuracy
+	
 # PREDICTING POINTS #
-nfldata1 = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'homediff':homediff, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
+nfldata1 = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
 nfldata1 = nfldata1[nfldata1['final_play'] >0]
 nfldata1 = nfldata1[nfldata1['homewins'] != 0.5]
 nfltarget1 = nfldata1['total_score']
 del nfldata1['final_play']
 del nfldata1['total_score']
+del nfldata1['homewins']
+del nfldata1['season']
+del nfldata1['playoffs']
+del nfldata1['sunday']
+del nfldata1['month']
+n_fold_percent_error = []
+for i in range(0,n):
+	rows = random.sample(nfldata1.index, int(round(split*samplesize)))
+	nfldata1_train = nfldata1.ix[rows]
+	nfldata1_test = nfldata1.drop(rows)
+	nfltarget1_train = nfltarget1.ix[rows]
+	nfltarget1_test = nfltarget1.drop(rows)
+	regr = linear_model.LinearRegression()
+	regr.fit(nfldata1_train, nfltarget1_train)
+	#np.mean((regr.predict(nfldata1_test)-nfltarget1_test)**2)
+	#regr.score(nfldata1_test, nfltarget1_test)
+	x1 = list(regr.predict(nfldata1_test))
+	y1 = list(nfltarget1_test)
+	points_accuracy = [x1[i]-y1[i] for i in range(len(nfldata1_test))]
+	#pl.scatter(points_accuracy, x1)
+	#pl.xlabel("Residuals")
+	#pl.ylabel("Fitted Values")
+	#pl.title("Residuals vs. Fitted")
+	#pl.show()
+	for i in range(len(points_accuracy)):
+		if points_accuracy[i] < 0:
+			points_accuracy[i] = points_accuracy[i]*-1
+	
+	avg_pts_off = sum(points_accuracy)/float(len(points_accuracy))
+	avg_pts = sum(total_score)/float(len(total_score))
+	percent_error = avg_pts_off / avg_pts
+	n_fold_percent_error.append(percent_error)
 
-rows = random.sample(nfldata1.index, int(round(split*samplesize)))
-nfldata1_train = nfldata1.ix[rows]
-nfldata1_test = nfldata1.drop(rows)
-nfltarget1_train = nfltarget1.ix[rows]
-nfltarget1_test = nfltarget1.drop(rows)
-
-regr = linear_model.LinearRegression()
-regr.fit(nfldata1_train, nfltarget1_train)
-np.mean((regr.predict(nfldata1_test)-nfltarget1_test)**2)
-regr.score(nfldata1_test, nfltarget1_test)
-x1 = regr.predict(nfldata1_test)
-y1 = list(nfltarget1_test)
-
+final_percent_error = sum(n_fold_percent_error)/float(len(n_fold_percent_error))
+final_percent_error
 # Plot predicted vs. actual values #
-
-points_accuracy = [x1[i]-y1[i] for i in range(len(nfldata1_test))]
-for i in range(len(points_accuracy)):
-	if points_accuracy[i] < 0:
-		points_accuracy[i] = points_accuracy[i]*-1
-avg_pts_off = sum(points_accuracy)/float(len(points_accuracy))
-avg_pts = sum(total_score)/float(len(total_score))
-percent_error = avg_pts_off / avg_pts
+pl.scatter(x1,y1)
+pl.xlabel("Predicted Values")
+pl.ylabel("Actual Values")
+pl.title("Predicting Total Points")
+pl.show()
 	
 
 # IDENTIFYING LAST PLAY OF GAME
