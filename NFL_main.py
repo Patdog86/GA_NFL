@@ -332,30 +332,39 @@ del nfldata['final_play']
 del nfldata['homewins']
 
 from sklearn.neighbors import KNeighborsClassifier
-knn = KNeighborsClassifier()
 split = 0.7
 n = 100
+m = 10
+knn = KNeighborsClassifier(n_neighbors = m)
 samplesize = len(nfldata)
 n_fold_accuracy = []
-for i in range(0,n):
-	rows = random.sample(nfldata.index, int(round(split*samplesize)))
-	nfldata_train = nfldata.ix[rows]
-	nfldata_test = nfldata.drop(rows)
-	nfltarget_train = nfltarget.ix[rows]
-	nfltarget_test = nfltarget.drop(rows)
-	model= knn.fit(nfldata_train, nfltarget_train)
-	x = list(knn.predict(nfldata_test))
-	y = list(nfltarget_test)
-	correct = [0]*len(nfldata_test)
-	for j in range(len(nfldata_test)):
-		if x[j] == y[j]:
-			correct[j] = 1
-	win_accuracy = (sum(correct)/float(len(correct)))
-	n_fold_accuracy.append(win_accuracy)
+final_accuracy = []
+for k in range(1,m+1):
+	for i in range(n):
+		knn = KNeighborsClassifier(n_neighbors = m)
+		rows = random.sample(nfldata.index, int(round(split*samplesize)))
+		nfldata_train = nfldata.ix[rows]
+		nfldata_test = nfldata.drop(rows)
+		nfltarget_train = nfltarget.ix[rows]
+		nfltarget_test = nfltarget.drop(rows)
+		model= knn.fit(nfldata_train, nfltarget_train)
+		x = list(knn.predict(nfldata_test))
+		y = list(nfltarget_test)
+		correct = [0]*len(nfldata_test)
+		for j in range(len(nfldata_test)):
+			if x[j] == y[j]:
+				correct[j] = 1
+		win_accuracy = (sum(correct)/float(len(correct)))
+		n_fold_accuracy.append(win_accuracy)
+		accuracy = sum(n_fold_accuracy)/float(len(n_fold_accuracy))
+	final_accuracy.append(accuracy)
 
-final_accuracy = sum(n_fold_accuracy)/float(len(n_fold_accuracy))
-final_accuracy
-	
+pl.plot(final_accuracy)
+pl.xlabel("# of Neighbors")
+pl.ylabel("Percent Accuracy")
+pl.title("Picking Winners with KNN cross-validation")
+pl.show()
+
 # PREDICTING POINTS #
 nfldata1 = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
 nfldata1 = nfldata1[nfldata1['final_play'] >0]
