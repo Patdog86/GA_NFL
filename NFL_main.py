@@ -33,7 +33,7 @@ for i in data.index:
 	if('punts' in data['description'][i]):
 		playtype[i] = 'punt'
 	if('kicks' in data['description'][i]) and (playtype[i] != 'pass') and (playtype[i] != 'punt'):
-		playtype[i] = 'kickoff'
+		playtype[i] = 'kick'
 	
 #Parsing gameid variable
 gameid = list(data['gameid'])	
