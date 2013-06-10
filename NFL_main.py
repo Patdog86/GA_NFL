@@ -13,8 +13,7 @@ import matplotlib
 import pylab as pl
 #=======
 #import play_parser
-from sklearn import *
-import random
+
 #import parse_gameid as pg
 np.random.seed(0)
 
@@ -50,14 +49,14 @@ for i in range(len(data)):
 		home_timezone[i] = 3
 	if hometeam[i] in ('MIN', 'CIN', 'DET', 'TEN', 'NO', 'DAL', 'CHI', 'STL', 'CLE', 'HOU', 'GB', 'KC' , 'IND'):
 		home_timezone[i] = 2
-	if hometeam[i] == 'DEN':
+	if hometeam[i] == ('DEN', 'ARI'):
 		home_timezone[i] = 1
 for i in range(len(data)):
 	if awayteam[i] in ('MIA', 'CAR', 'ATL', 'NYJ', 'BAL', 'NYG', 'NE', 'TB', 'PIT', 'WAS', 'JAC', 'PHI', 'BUF'):
 		away_timezone[i] = 3
 	if awayteam[i] in ('MIN', 'CIN', 'DET', 'TEN', 'NO', 'DAL', 'CHI', 'STL', 'CLE', 'HOU', 'GB', 'KC' , 'IND'):
 		away_timezone[i] = 2
-	if awayteam[i] == 'DEN':
+	if awayteam[i] == ('DEN', 'ARI'):
 		away_timezone[i] = 1
 time_diff = [home_timezone[i] - away_timezone[i] for i in range(len(data))]
 west_east = [0]*len(data)
@@ -213,7 +212,7 @@ total_score = [awayscore[i]+homescore[i] for i in range(len(data))]
 
 #identifying winner
 homewins = [0]*len(data)
-for i in range(len(data)-1):
+for i in range(len(data)):
 	if homescore[i] > awayscore[i]:
 		homewins[i] = 1
 	if homescore[i] == awayscore[i]:
@@ -324,22 +323,23 @@ for i in range(len(data)):
 		away_punt[i] = away_punt[i-1]
 
 # PREDICTING WINNER #	
-nfldata = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
-nfldata = nfldata[nfldata['final_play'] >0]
-nfldata = nfldata[nfldata['homewins'] != 0.5]
-nfltarget = nfldata['homewins']
-del nfldata['final_play']
-del nfldata['homewins']
+nfldata = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt,  'total_score':total_score, 'playoffs':playoffs, 'final_play':final_play, 'homewins':homewins})
+nfldata = pd.DataFrame(nfldata[~(nfldata.final_play==0)])
+nfldata = pd.DataFrame(nfldata[~(nfldata.homewins == 0.5)])
+nfltarget = nfldata.homewins
+del nfldata['final_play'] 
+del nfldata['homewins'] 
+del nfldata['total_score']
 
 from sklearn.neighbors import KNeighborsClassifier
 split = 0.7
-n = 100
+n = 200
 m = 10
 knn = KNeighborsClassifier(n_neighbors = m)
 samplesize = len(nfldata)
 n_fold_accuracy = []
 final_accuracy = []
-for k in range(1,m+1):
+for k in range(1,m):
 	for i in range(n):
 		knn = KNeighborsClassifier(n_neighbors = m)
 		rows = random.sample(nfldata.index, int(round(split*samplesize)))
@@ -358,6 +358,8 @@ for k in range(1,m+1):
 		n_fold_accuracy.append(win_accuracy)
 		accuracy = sum(n_fold_accuracy)/float(len(n_fold_accuracy))
 	final_accuracy.append(accuracy)
+	
+final_accuracy
 
 pl.plot(final_accuracy)
 pl.xlabel("# of Neighbors")
@@ -366,30 +368,30 @@ pl.title("Picking Winners with KNN cross-validation")
 pl.show()
 
 # PREDICTING POINTS #
-nfldata1 = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt, 'final_play':final_play, 'total_score':total_score, 'homewins':homewins, 'playoffs':playoffs})
-nfldata1 = nfldata1[nfldata1['final_play'] >0]
-nfldata1 = nfldata1[nfldata1['homewins'] != 0.5]
-nfltarget1 = nfldata1['total_score']
-del nfldata1['final_play']
+nfldata1 = pd.DataFrame({'east_west':east_west, 'west_east':west_east, 'dome':dome, 'month':month, 'sunday':sunday, 'home_yards_gained_game':home_yards_gained_game, 'season':season,'away_yards_gained_game':away_yards_gained_game, 'plays':plays, 'penalties':penalties, 'penalty_yards_game':penalty_yards_game, 'turnovers':turnovers, 'home_run': home_run, 'home_pass':home_pass, 'home_kick':home_kick, 'home_punt':home_punt, 'away_run':away_run, 'away_pass':away_pass, 'away_kick':away_kick, 'away_punt':away_punt,  'total_score':total_score, 'playoffs':playoffs, 'final_play':final_play, 'homewins':homewins})
+nfldata1 = pd.DataFrame(nfldata1[~(nfldata1.final_play==0)])
+nfldata1 = pd.DataFrame(nfldata1[~(nfldata1.homewins == 0.5)])
+nfltarget1 = pd.DataFrame(nfldata1.total_score)
+del nfldata1['final_play'] 
+del nfldata1['homewins'] 
 del nfldata1['total_score']
-del nfldata1['homewins']
-del nfldata1['season']
-del nfldata1['playoffs']
-del nfldata1['sunday']
 del nfldata1['month']
+del nfldata1['playoffs']
+del nfldata1['west_east']
+del nfldata1['east_west']
+del nfldata1['sunday']
+
 n_fold_percent_error = []
 for i in range(0,n):
 	rows = random.sample(nfldata1.index, int(round(split*samplesize)))
-	nfldata1_train = nfldata1.ix[rows]
-	nfldata1_test = nfldata1.drop(rows)
-	nfltarget1_train = nfltarget1.ix[rows]
-	nfltarget1_test = nfltarget1.drop(rows)
-	regr = linear_model.LinearRegression()
-	regr.fit(nfldata1_train, nfltarget1_train)
-	#np.mean((regr.predict(nfldata1_test)-nfltarget1_test)**2)
-	#regr.score(nfldata1_test, nfltarget1_test)
-	x1 = list(regr.predict(nfldata1_test))
-	y1 = list(nfltarget1_test)
+	nfldata1_train = np.array(nfldata1.ix[rows])
+	nfldata1_test = np.array(nfldata1.drop(rows))
+	nfltarget1_train = np.array(nfltarget1.ix[rows])
+	nfltarget1_test = np.array(nfltarget1.drop(rows))
+	results = sm.OLS(nfltarget1_train, nfldata1_train).fit()
+	#results.summary()
+	x1 = results.predict(nfldata1_test)
+	y1 = nfltarget1_test
 	points_accuracy = [x1[i]-y1[i] for i in range(len(nfldata1_test))]
 	#pl.scatter(points_accuracy, x1)
 	#pl.xlabel("Residuals")
