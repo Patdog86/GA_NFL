@@ -7,7 +7,6 @@ import statsmodels
 import numpy as np
 import pandas as pd
 import re
-import sys
 import math
 import matplotlib
 import pylab as pl
